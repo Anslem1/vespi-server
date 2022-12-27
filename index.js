@@ -15,9 +15,12 @@ const categoryRoute = require('./routes/category')
 const initialData = require('./routes/initialdata')
 
 mongoose
-  .connect(process.env.MONGO_URL)
+  .connect(process.env.MONGO_URL, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+  })
   .then(console.log('Mongo working?'))
-  .catch(err => console.log(err))
+  .catch(err => console.log({ err }))
 
 app
   .use(cors())
@@ -28,6 +31,6 @@ app
   .use('/api/journals', postRoute)
   .use('/api/categories', categoryRoute)
 
-app.listen('5000', () => {
-  console.log('We running backend. Port: 5000')
+app.listen(process.env.PORT, () => {
+  console.log(`server running on port ${process.env.PORT}`)
 })
