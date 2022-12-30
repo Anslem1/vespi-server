@@ -55,13 +55,16 @@ exports.loginUser = async (req, res) => {
       } else {
         return res.status(400).json({ message: 'Wrong username or password' })
       }
-    } else if (!user) {
-      return res.status(400).json({ message: 'We could not find that user' })
     }
   } catch (err) {
-    if (err) {
+    if (
+      err == "TypeError: Cannot read properties of null (reading 'password')" ||
+      err == "TypeError: Cannot read property 'password' of null"
+    ) {
+      res.status(400).json({ message: 'We could not find that user' })
+    } else {
       console.log({ err })
-      return res.status(400).json({ err })
+      return res.status(400).json({ err, message: 'from here' })
     }
   }
 }
