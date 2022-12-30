@@ -38,8 +38,8 @@ exports.registerUser = async (req, res) => {
 }
 
 exports.loginUser = async (req, res) => {
+  const user = await User.findOne({ username: req.body.username })
   try {
-    const user = await User.findOne({ username: req.body.username })
     const validated = await bcrypt.compare(req.body.password, user.password)
     if (user) {
       if (validated) {
@@ -55,15 +55,13 @@ exports.loginUser = async (req, res) => {
       } else {
         return res.status(400).json({ message: 'Wrong username or password' })
       }
+    } else if (!user) {
+      return res.status(400).json({ message: 'We could not find that user' })
     }
   } catch (err) {
-    if (
-      err == "TypeError: Cannot read properties of null (reading 'password')"
-    ) {
-      res.status(400).json({ message: 'We could not find that user' })
-    } else {
+    if (err) {
       console.log({ err })
-      return res.status(400).json({ err, message: 'from here' })
+      return res.status(400).json({ err })
     }
   }
 }
