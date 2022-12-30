@@ -62,6 +62,7 @@ exports.loginUser = async (req, res) => {
     ) {
       res.status(400).json({ message: 'We could not find that user' })
     } else {
+      console.log({ err })
       return res.status(400).json({ err, message: 'from here' })
     }
   }
