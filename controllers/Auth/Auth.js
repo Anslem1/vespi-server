@@ -38,35 +38,59 @@ exports.registerUser = async (req, res) => {
 }
 
 exports.loginUser = async (req, res) => {
-  const user = await User.findOne({ username: req.body.username })
-  try {
-    const validated = await bcrypt.compare(req.body.password, user.password)
-    if (user) {
-      if (validated) {
-        const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, {
-          expiresIn: '100d'
-        })
-        const { password, ...userCreds } = user._doc
-        res.cookie('token', token, { expiresIn: '100d' })
-        res.status(200).json({
-          token,
-          userCreds
-        })
+  User.findOne({ username: req.body.username }).exec(async (error, user) => {
+    error && res.status(400).json({ error })
+    try {
+      if (user) {
+        const validated = await bcrypt.compare(req.body.password, user.password)
+        if (validated) {
+          const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, {
+            expiresIn: '100d'
+          })
+          const { password, ...userCreds } = user._doc
+          res.cookie('token', token, { expiresIn: '100d' })
+          res.status(200).json({
+            token,
+            userCreds
+          })
+        } else {
+          return res.status(400).json({ message: 'Wrong username or password' })
+        }
       } else {
-        return res.status(400).json({ message: 'Wrong username or password' })
+        return res.status(400).json({ message: 'We could not find that user' })
       }
+    } catch (error) {
+      console.log({ error })
     }
-  } catch (err) {
-    if (
-      err == "TypeError: Cannot read properties of null (reading 'password')" ||
-      err == "TypeError: Cannot read property 'password' of null"
-    ) {
-      res.status(400).json({ message: 'We could not find that user' })
-    } else {
-      console.log({ err })
-      return res.status(400).json({ err, message: 'from here' })
-    }
-  }
+  })
+
+  // try {
+  //   const user = await User.findOne({ username: req.body.username })
+  //   const validated = await bcrypt.compare(req.body.password, user.password)
+  //   if (user) {
+  // if (validated) {
+  //   const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, {
+  //     expiresIn: '100d'
+  //   })
+  //   const { password, ...userCreds } = user._doc
+  //   res.cookie('token', token, { expiresIn: '100d' })
+  //   res.status(200).json({
+  //     token,
+  //     userCreds
+  //   })
+  // } else {
+  //   return res.status(400).json({ message: 'Wrong username or password' })
+  // }
+  //   }
+  // } catch (err) {
+  //   if (err) {
+  //     console.log({ err })
+  //     console.log(err == user == null)
+  //   } else {
+  //     console.log({ err })
+  //     return res.status(400).json({ err, message: 'from here' })
+  //   }
+  // }
 }
 
 exports.logoutUser = (req, res) => {
