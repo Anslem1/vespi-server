@@ -62,9 +62,9 @@ exports.updateUser = async (req, res) => {
 }
 
 exports.deleteUser = async (req, res) => {
-  if (req.body.id === req.params.id) {
+  const user = await User.findById(req.params.id)
+  if (user._id == req.params.id) {
     try {
-      const user = await User.findById(req.params.id)
       try {
         await Post.deleteMany({ username: user.username })
         await User.findByIdAndDelete(req.params.id, {
@@ -74,9 +74,10 @@ exports.deleteUser = async (req, res) => {
       } catch (err) {
         return res.status(500).json(err)
       }
-    } catch (err) {
-      res.status(404).json('We could not find the user')
+    } catch (error) {
+      res.status(500).json({ error })
     }
-    ;('Action not allowed')
+  } else {
+    res.status(400).json({ message: 'Action not allowed' })
   }
 }
